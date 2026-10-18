@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arc OS - Retro Workstation</title>
+    <!-- Tailwind CSS for utility styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tone.js for Web Audio retro chimes & SFX -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <!-- Pixelated / Retro Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Custom Retro Windows 95 styling standards */
+        :root {
+            --win-bg: #c0c0c0;
+            --win-border-light: #ffffff;
+            --win-border-dark: #808080;
+            --win-border-darkest: #000000;
+            --win-title-blue: #000080;
+            --win-title-blue-light: #1084d0;
+        }
+
+        body {
+            font-family: 'Tahoma', 'MS Sans Serif', Geneva, sans-serif;
+            background-color: #008080; /* Classic Win95 Teal */
+            overflow: hidden;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        body::after {
+            content: " ";
+            display: block;
+            position: fixed;
+            top: 0; 
+            left: 0; 
+            bottom: 0; 
+            right: 0;
+            background: linear-gradient(
+                rgba(18, 16, 16, 0) 50%, 
+                rgba(0, 0, 0, 0.25) 50%
+            );
+            background-size: 100% 4px;
+            z-index: 99999;
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
+        .font-mono-retro {
+            font-family: 'Share Tech Mono', monospace;
+        }
+
+        .font-pixel {
+            font-family: 'VT323', monospace;
+        }
+
+        .outset-border {
+            border-top: 2px solid var(--win-border-light);
+            border-left: 2px solid var(--win-border-light);
+            border-right: 2px solid var(--win-border-darkest);
+            border-bottom: 2px solid var(--win-border-darkest);
+            box-shadow: inset 1px 1px #dfdfdf, inset -1px -1px #808080;
+        }
+
+        .inset-border {
+            border-top: 2px solid var(--win-border-darkest);
+            border-left: 2px solid var(--win-border-darkest);
+            border-right: 2px solid var(--win-border-light);
+            border-bottom: 2px solid var(--win-border-light);
+            box-shadow: inset 1px 1px #808080, inset -1px -1px #dfdfdf;
+            background-color: #ffffff;
+        }
+
+        .btn-retro {
+            background-color: var(--win-bg);
+            border-top: 2px solid var(--win-border-light);
+            border-left: 2px solid var(--win-border-light);
+            border-right: 2px solid var(--win-border-darkest);
+            border-bottom: 2px solid var(--win-border-darkest);
+            box-shadow: inset 1px 1px #dfdfdf, inset -1px -1px #808080;
+        }
+
+        .btn-retro:active, .btn-retro.active {
+            border-top: 2px solid var(--win-border-darkest);
+            border-left: 2px solid var(--win-border-darkest);
+            border-right: 2px solid var(--win-border-light);
+            border-bottom: 2px solid var(--win-border-light);
+            box-shadow: inset 1px 1px #808080, inset -1px -1px #dfdfdf;
+            padding-top: 2px;
+            padding-left: 2px;
+        }
+
+        .crt-overlay {
+            background: linear-gradient(
+                rgba(18, 16, 16, 0) 50%, 
+                rgba(0, 0, 0, 0.25) 50%
+            ), linear-gradient(
+                90deg,
+                rgba(255, 0, 0, 0.03),
+                rgba(0, 255, 0, 0.01),
+                rgba(0, 0, 255, 0.03)
+            );
+            background-size: 100% 4px, 6px 100%;
+            pointer-events: none;
+        }
+
+        ::-webkit-scrollbar {
+            width: 16px;
+            height: 16px;
+            background: #e0e0e0;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--win-bg);
+            border-top: 2px solid var(--win-border-light);
+            border-left: 2px solid var(--win-border-light);
+            border-right: 2px solid var(--win-border-darkest);
+            border-bottom: 2px solid var(--win-border-darkest);
+        }
+
+        ::-webkit-scrollbar-button {
+            background: var(--win-bg);
+            width: 16px;
+            height: 16px;
+            border-top: 2px solid var(--win-border-light);
+            border-left: 2px solid var(--win-border-light);
+            border-right: 2px solid var(--win-border-darkest);
+            border-bottom: 2px solid var(--win-border-darkest);
+        }
+    </style>
+</head>
+<body class="h-screen w-screen flex flex-col justify-between overflow-hidden text-sm select-none">
+
+    <!-- LOGIN SCREEN MODAL -->
+    <div id="login-screen" class="absolute inset-0 z-50 bg-[#008080] flex items-center justify-center p-4">
+        <div class="w-96 bg-[#c0c0c0] outset-border p-1 shadow-2xl">
+            <div class="bg-gradient-to-r from-[#000080] to-[#1084d0] p-1 flex items-center justify-between text-white font-bold mb-3">
+                <span class="text-xs flex items-center gap-2">🔑 Bem-vindo ao Arc OS</span>
+            </div>
+            
+            <div class="p-3 flex flex-col gap-3">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-gray-300 inset-border flex items-center justify-center text-2xl">
+                        💻
+                    </div>
+                    <div class="text-xs text-gray-800 leading-tight">
+                        Digite sua senha para entrar no ambiente Arc OS.
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-2 mt-2">
+                    <div class="flex items-center justify-between">
+                        <label class="text-xs font-bold text-gray-800">Usuário:</label>
+                        <input type="text" id="login-user" value="ANOM" 
+                               class="w-48 bg-white inset-border px-2 py-1 text-xs text-gray-800 font-mono focus:outline-none" readonly>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <label class="text-xs font-bold text-gray-800">Senha:</label>
+                        <input type="password" id="login-pass" autocomplete="off" placeholder="Digite sua senha..."
+                               class="w-48 bg-white inset-border px-2 py-1 text-xs text-gray-800 font-mono focus:outline-none"
+                               onkeydown="if(event.key==='Enter') attemptLogin()">
+                    </div>
+                </div>
+
+                <div id="login-error" class="text-xs text-red-600 font-bold hidden text-center mt-1">
+                    Senha incorreta! Dica: ARC1998
+                </div>
+
+                <div class="flex justify-end gap-2 mt-2">
+                    <button onclick="attemptLogin()" class="btn-retro px-4 py-1 text-xs font-bold">OK</button>
+                    <button onclick="document.getElementById('login-pass').value=''" class="btn-retro px-4 py-1 text-xs">Limpar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DESKTOP CANVAS -->
+    <div id="desktop" class="relative flex-1 w-full h-full p-4 grid grid-flow-col grid-rows-6 gap-x-6 gap-y-4 content-start items-start justify-start overflow-hidden">
+        
+        <!-- CENTRED RETRO POKÉBALL WATERMARK ART -->
+        <div class="absolute inset-0 flex items-center justify-center pointer-events-none z-0 opacity-25">
+            <svg class="w-[380px] h-[380px] drop-shadow-lg" viewBox="0 0 200 200">
+                <circle cx="100" cy="100" r="90" fill="#006666" stroke="#004d4d" stroke-width="4"/>
+                <path d="M 10 100 A 90 90 0 0 1 190 100 Z" fill="#ff3333" stroke="#1a0000" stroke-width="6"/>
+                <path d="M 190 100 A 90 90 0 0 1 10 100 Z" fill="#e6e6e6" stroke="#1a0000" stroke-width="6"/>
+                <rect x="10" y="88" width="180" height="24" fill="#1a0000"/>
+                <circle cx="100" cy="100" r="28" fill="#ffffff" stroke="#1a0000" stroke-width="6"/>
+                <circle cx="100" cy="100" r="14" fill="#00ffff" stroke="#1a0000" stroke-width="4"/>
+                <ellipse cx="85" cy="85" rx="6" ry="3" fill="#ffffff" transform="rotate(-35 85 85)"/>
+            </svg>
+        </div>
+
+        <!-- Desktop icons rendered dynamically -->
+    </div>
+
+    <!-- WINDOW 4: TRASH FOLDER ("Lixeira") -->
+    <div id="win-trash" class="window hidden absolute w-full max-w-md h-80 bg-[#c0c0c0] outset-border flex flex-col z-10 top-24 left-1/4 shadow-2xl">
+        <div class="window-header bg-gradient-to-r from-[#000080] to-[#1084d0] p-1 flex items-center justify-between text-white font-bold cursor-move">
+            <div class="flex items-center gap-2 px-1">
+                <span class="text-xs">🗑️</span>
+                <span class="text-xs tracking-wide">Lixeira de Arquivos</span>
+            </div>
+            <div class="flex gap-1">
+                <button onclick="minimizeWindow('win-trash')" class="btn-retro w-4 h-4 text-black text-[10px] leading-none flex items-center justify-center font-bold">_</button>
+                <button onclick="closeWindow('win-trash')" class="btn-retro w-4 h-4 text-black text-[10px] leading-none flex items-center justify-center font-bold">✕</button>
+            </div>
+        </div>
+        <div class="flex items-center gap-2 text-xs px-2 py-1 border-b border-gray-400 bg-[#c0c0c0]">
+            <span class="text-gray-600">Endereço:</span>
+            <div class="bg-white inset-border flex-1 px-1 py-0.5 text-gray-700">C:\LIXEIRA\DELETED</div>
+        </div>
+        <div id="trash-container" class="flex-1 p-2 bg-white inset-border m-1 overflow-y-auto grid grid-cols-2 gap-2 content-start select-none">
+            <!-- Dynamically populated trash items -->
+        </div>
+        <div class="bg-[#c0c0c0] px-2 py-1 border-t border-gray-400 text-[11px] text-gray-700 flex justify-between">
+            <span id="trash-status">0 objeto(s) selecionáveis</span>
+            <span>Sistema Arc OS</span>
+        </div>
+    </div>
+
+    <!-- WINDOW 0: DOCUMENTS FOLDER ("Documentos") -->
+    <div id="win-docs" class="window hidden absolute w-full max-w-md h-80 bg-[#c0c0c0] outset-border flex flex-col z-10 top-10 left-10 shadow-2xl">
+        <div class="window-header bg-gradient-to-r from-[#000080] to-[#1084d0] p-1 flex items-center justify-between text-white font-bold cursor-move">
+            <div class="flex items-center gap-2 px-1">
+                <span class="text-xs">📁</span>
+                <span class="text-xs tracking-wide">C:\Users\ANOM\Documentos</span>
+            </div>
+            <div class="flex gap-1">
+                <button onclick="minimizeWindow('win-docs')" class="btn-retro w-4 h-4 text-black text-[10px] leading-none flex items-center justify-center font-bold">_</button>
+                <button onclick="closeWindow('win-docs')" class="btn-retro w-4 h-4 text-black text-[10px] leading-none flex items-center justify-center font-bold">✕</button>
+            </div>
+        </div>
+        <div class="flex items-center gap-2 text-xs px-2 py-1 border-b border-gray-400 bg-[#c0c0c0]">
+            <span class="text-gray-600">Endereço:</span>
+            <div class="bg-white inset-border flex-1 px-1 py-0.5 text-gray-700">C:\Documentos</div>
+        </div>
+        <div id="docs-container" class="flex-1 p-2 bg-white inset-border m-1 overflow-y-auto grid grid-cols-2 gap-2 content-start select-none">
+            <!-- Dynamically populated document items -->
+        </div>
+        <div class="bg-[#c0c0c0] px-2 py-1 border-t border-gray-400 text-[11px] text-gray-700 flex justify-between">
+            <span id="docs-status">0 arquivo(s) encontrado(s)</span>
+            <span>Pasta do Usuário: ANOM</span>
+        </div>
+    </div>
+
+    <!-- WINDOW 1: WEB BROWSER ("WorldWideWeb Navigator") -->
+    <div id="win-browser" class="window hidden absolute w-[550px] max-w-[95vw] h-[400px] bg-[#c0c0c0] outset-border flex flex-col z-10 top-12 left-16 shadow-2xl">
+        <div class="window-header bg-gradient-to-r from-[#000080] to-[#1084d0] p-1 flex items-center justify-between text-white font-bold cursor-move">
+            <div class="flex items-center gap-2 px-1">
+                <span class="text-xs">🌐</span>
+                <span class="text-xs tracking-wide">WorldWideWeb Navigator v1.0</span>
+            </div>
+            <div class="flex gap-1">
+                <button onclick="minimizeWindow('win-browser')" class="btn-retro w-4 h-4 text-black text-[10px] leading-none flex items-center justify-center font-bold">_</button>
+                <button onclick="closeWindow('win-browser')" class="btn-retro w-4 h-4 text-black text-[10px] leading-none flex items-center justify-center font-bold">✕</button>
+            </div>
+        </div>
+        <!-- Browser Toolbar -->
+        <div class="p-1 bg-[#c0c0c0] border-b border-gray-400 flex flex-col gap-1">
+            <div class="flex items-center gap-1 text-xs">
+                <button onclick="navigateBrowser('arc://home')" class="btn-retro px-2 py-0.5 font-bold">🏠 Home</button>
+                <button onclick="navigateBrowser('arc://research')" class="btn-retro px-2 py-0.5 font-bold">🔍 Pesquisa</button>
+                <button onclick="navigateBrowser('arc://forum')" class="btn-retro px-2 py-0.5 font-bold">💬 Fórum</button>
+            </div>
+            <div class="flex items-center gap-2 text-xs">
+                <span class="font-bold text-gray-700">URL:</span>
+                <input type="text" id="browser-url-input" value="arc://home" 
+                       class="flex-1 bg-white inset-border px-2 py-0.5 text-xs text-gray-800 focus:outline-none"
+                       onkeydown="if(event.key==='Enter') navigateBrowser(this.value)">
+                <button onclick="navigateBrowser(document.getElementById('browser-url-input').value)" class="btn-retro px-3 py-0.5 font-bold">Ir</button>
+            </div>
+        </div>
+        <!-- Browser Viewport -->
+        <div id="browser-viewport" class="flex-1 p-3 bg-white inset-border m-1 overflow-y-auto text-xs font-sans select-text">
+            <!-- Dynamic web content will load here -->
+        </div>
+    </div>
+
+    <!-- WINDOW 3: NOTES APP ("Bloco de Notas") -->
+    <div id="win-notes" class="window hidden absolute w-96 max-w-[90vw] h-80 bg-[#c0c0c0] outset-border flex flex-col z-10 top-16 left-8 shadow-2xl">
+        <div class="window-header bg-gradient-to-r from-[#000080] to-[#1084d0] p-1 flex items-center justify-between text-white font-bold cursor-move">
+            <div class="flex items-center gap-2 px-1">
+                <span class="text-xs">📄</span>
+                <span class="text-xs tracking-wide">Bloco de Notas - Clues.txt</span>
+            </div>
+            <div class="flex gap-1">
+                <button onclick="minimizeWindow('win-notes')" class="btn-retro w-4 h-4 text-black text-[10px] leading-none flex items-center justify-center font-bold">_</button>
+                <button onclick="closeWindow('win-notes')" class="btn-retro w-4 h-4 text-black text-[10px] leading-none flex items-center justify-center font-bold">✕</button>
+            </div>
+        </div>
+        <div class="flex gap-3 text-xs px-2 py-0.5 border-b border-gray-400 bg-[#c0c0c0]">
+            <span class="underline cursor-pointer">Arquivo</span>
+            <span class="underline cursor-pointer">Editar</span>
+            <span class="underline cursor-pointer">Exibir</span>
+            <span class="underline cursor-pointer">Ajuda</span>
+        </div>
+        <div class="flex-1 p-2 bg-white inset-border m-1 overflow-auto font-mono text-xs text-gray-800 leading-relaxed select-text">
+            [REGISTRO PESSOAL - NÃO APAGAR]<br/><br/>
+            
+            Não sei como ou quando mas durante minhas pesquisas esse 0r4cul0 apareceu em meu desktop.<br/>
+            
+            Depois de um tempo receoso, decidi abri-lo, não sei se entendi bem como ele funciona mas ele parece responder algumas questões.<br/><br/>
+
+            -- Me pergunto se isso de alguma forma tem haver com minha pesquisa ou com os vultos que eu ando vendo.
+        </div>
+    </div>
+
+    <!-- WINDOW 5: ORACULO TERMINAL APP -->
+    <div id="win-oracle" class="window hidden absolute w-[520px] max-w-[95vw] h-96 bg-[#c0c0c0] outset-border flex flex-col z-20 top-12 left-1/3 shadow-2xl">
+        <div class="window-header bg-gradient-to-r from-[#000080] to-[#1084d0] p-1 flex items-center justify-between text-white font-bold cursor-move">
+            <div class="flex items-center gap-2 px-1">
+                <span class="text-xs">👁️</span>
+                <span class="text-xs tracking-wide">0R4CUL0 v.null - Visual Terminal</span>
+            </div>
+            <div class="flex gap-1">
+                <button onclick="toggleAudio()" id="audio-btn" class="btn-retro px-1 text-black text-[10px] leading-none flex items-center justify-center font-bold" title="Toggle SFX">🔊 Sound: ON</button>
+                <button onclick="minimizeWindow('win-oracle')" class="btn-retro w-4 h-4 text-black text-[10px] leading-none flex items-center justify-center font-bold">_</button>
+                <button onclick="closeWindow('win-oracle')" class="btn-retro w-4 h-4 text-black text-[10px] leading-none flex items-center justify-center font-bold">✕</button>
+            </div>
+        </div>
+
+        <div class="relative flex-1 bg-black p-3 inset-border m-1 overflow-hidden font-mono-retro text-green-400 flex flex-col justify-between">
+            <div class="crt-overlay absolute inset-0"></div>
+
+            <div id="terminal-log" class="flex-1 overflow-y-auto pr-1 text-sm space-y-1 select-text">
+                <p class="text-green-500">***************************************************</p>
+                <p class="text-green-300 font-bold">ARC OS - SISTEMA ORACULO [VERSAO null]</p>
+                <p class="text-green-500">***************************************************</p>
+                <p class="text-gray-400">Conexão estabelecida...</p>
+                <p class="text-gray-400">Nos estamos ouvindo...</p>
+                <p class="text-amber-400">Digite 'INICIAR' para conversar com o Oráculo.</p>
+                <br/>
+            </div>
+
+            <div class="flex items-center gap-2 mt-2 border-t border-green-900 pt-2 z-10">
+                <span class="text-green-400 font-bold">&gt;</span>
+                <input type="text" id="terminal-input" autocomplete="off" placeholder="Digite seu comando..." 
+                       class="flex-1 bg-transparent text-green-300 outline-none font-mono-retro text-sm placeholder-green-800"
+                       onkeydown="handleTerminalCommand(event)">
+            </div>
+        </div>
+    </div>
+
+    <!-- SYSTEM ERROR DIALOG POPUP -->
+    <div id="error-modal" class="hidden absolute z-50 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 bg-[#c0c0c0] outset-border p-1 shadow-2xl">
+        <div class="bg-gradient-to-r from-[#800000] to-[#d01010] p-1 flex items-center justify-between text-white font-bold mb-2">
+            <span id="error-title" class="text-xs">Erro do Sistema</span>
+            <button onclick="closeErrorModal()" class="btn-retro w-4 h-4 text-black text-[10px] leading-none flex items-center justify-center font-bold">✕</button>
+        </div>
+        <div class="p-3 flex items-start gap-3">
+            <span class="text-3xl">⚠️</span>
+            <div id="error-message" class="text-xs text-gray-800 leading-normal select-text">
+                Mensagem de erro generica...
+            </div>
+        </div>
+        <div class="flex justify-end p-2 bg-[#c0c0c0] gap-2">
+            <button onclick="closeErrorModal()" class="btn-retro px-4 py-1 text-xs font-bold">OK</button>
+        </div>
+    </div>
+
+    <!-- MODAL / POPUP DIALOG FOR FILE VIEWER -->
+    <div id="file-viewer-modal" class="hidden absolute z-50 top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 bg-[#c0c0c0] outset-border p-1 shadow-2xl">
+        <div class="bg-gradient-to-r from-[#000080] to-[#1084d0] p-1 flex items-center justify-between text-white font-bold mb-2">
+            <span id="modal-title" class="text-xs">Visualizador de Arquivos</span>
+            <button onclick="closeModal()" class="btn-retro w-4 h-4 text-black text-[10px] leading-none flex items-center justify-center font-bold">✕</button>
+        </div>
+        <div class="p-3 bg-white inset-border text-xs font-mono text-gray-800 mb-3 whitespace-pre-wrap select-text max-h-48 overflow-y-auto" id="modal-content">
+            Conteúdo do arquivo...
+        </div>
+        <div class="flex justify-end">
+            <button onclick="closeModal()" class="btn-retro px-4 py-1 text-xs font-bold">Fechar</button>
+        </div>
+    </div>
+
+    <!-- START MENU POPUP -->
+    <div id="start-menu" class="hidden absolute bottom-10 left-1 w-52 bg-[#c0c0c0] outset-border z-40 p-1 flex">
+        <div class="bg-gray-800 text-white font-bold w-6 flex items-end justify-center pb-2 tracking-widest uppercase text-xs" style="writing-mode: vertical-lr; transform: rotate(180deg);">
+            Arc OS 95
+        </div>
+        <div class="flex-1 py-1 flex flex-col gap-1 text-xs">
+            <button onclick="openWindow('win-trash'); toggleStartMenu()" class="px-3 py-1.5 text-left hover:bg-blue-800 hover:text-white flex items-center gap-2">
+                <span>🗑️</span> Lixeira
+            </button>
+            <button onclick="openWindow('win-docs'); toggleStartMenu()" class="px-3 py-1.5 text-left hover:bg-blue-800 hover:text-white flex items-center gap-2">
+                <span>📁</span> Documentos
+            </button>
+            <button onclick="openWindow('win-browser'); toggleStartMenu()" class="px-3 py-1.5 text-left hover:bg-blue-800 hover:text-white flex items-center gap-2">
+                <span>🌐</span> WWW Navigator
+            </button>
+            <button onclick="openWindow('win-notes'); toggleStartMenu()" class="px-3 py-1.5 text-left hover:bg-blue-800 hover:text-white flex items-center gap-2">
+                <span>📄</span> Bloco de Notas
+            </button>
+            <button onclick="openWindow('win-oracle'); toggleStartMenu()" class="px-3 py-1.5 text-left hover:bg-blue-800 hover:text-white flex items-center gap-2">
+                <span>👁️</span> Oraculo Terminal
+            </button>
+            <hr class="border-gray-400 my-1"/>
+            <button onclick="logOff(); toggleStartMenu()" class="px-3 py-1.5 text-left hover:bg-blue-800 hover:text-white flex items-center gap-2 font-bold">
+                <span>🔑</span> Encerrar Sessão (ANOM)...
+            </button>
+            <button onclick="triggerShutdown()" class="px-3 py-1.5 text-left hover:bg-blue-800 hover:text-white flex items-center gap-2 font-bold">
+                <span>💻</span> Desligar Arc OS...
+            </button>
+        </div>
+    </div>
+
+    <!-- BOTTOM TASKBAR -->
+    <div class="h-10 bg-[#c0c0c0] outset-border flex items-center justify-between px-1 z-30 relative select-none">
+        <div class="flex items-center gap-2">
+            <button id="start-btn" onclick="toggleStartMenu()" class="btn-retro px-2 py-1 flex items-center gap-1.5 font-bold text-xs active:bg-gray-300">
+                <div class="grid grid-cols-2 gap-0.5 w-3.5 h-3.5">
+                    <div class="bg-red-500"></div>
+                    <div class="bg-green-500"></div>
+                    <div class="bg-blue-500"></div>
+                    <div class="bg-yellow-500"></div>
+                </div>
+                Iniciar
+            </button>
+
+            <div id="taskbar-tabs" class="flex gap-1 overflow-x-auto">
+                <!-- Active window tabs -->
+            </div>
+        </div>
+
+        <div class="inset-border px-2 py-0.5 text-xs font-sans text-gray-800 flex items-center gap-2 bg-[#c0c0c0]">
+            <!-- Ethernet Status Button (Clicking shows IP as Unknown without turning off connection) -->
+            <button onclick="showEthernetStatus()" title="ArcNet Connected (IP: Unknown)" class="hover:bg-gray-300 px-0.5 rounded cursor-pointer">
+                🖧
+            </button>
+            <button onclick="toggleAudio()" title="Controle de Volume" class="hover:bg-gray-300 px-0.5 rounded cursor-pointer">
+                <span id="sound-status-icon">🔊</span>
+            </button>
+            <span id="system-clock" class="pl-1 border-l border-gray-400 font-mono">12:00 PM</span>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC WITH MODULAR JSON CONFIG -->
+    <script>
+        const arcOSConfig = {
+            desktopIcons: [
+                {
+                    id: 'win-trash',
+                    name: 'Lixeira',
+                    type: 'window',
+                    windowId: 'win-trash',
+                    svgMarkup: `<svg class="w-9 h-9 drop-shadow" viewBox="0 0 32 32">
+                        <path d="M6 8 L26 8 L24 28 L8 28 Z" fill="#c0c0c0" stroke="#000" stroke-width="2"/>
+                        <rect x="4" y="5" width="24" height="3" fill="#808080" stroke="#000" stroke-width="1.5"/>
+                        <rect x="12" y="2" width="8" height="3" fill="#808080" stroke="#000" stroke-width="1.5"/>
+                        <path d="M12 12 L16 18 L20 12" fill="none" stroke="#008000" stroke-width="2"/>
+                    </svg>`
+                },
+                {
+                    id: 'win-docs',
+                    name: 'Documentos',
+                    type: 'window',
+                    windowId: 'win-docs',
+                    svgMarkup: `<svg class="w-9 h-9 drop-shadow" viewBox="0 0 32 32">
+                        <path d="M2 6 L12 6 L15 10 L30 10 L30 26 L2 26 Z" fill="#e0a000" stroke="#000" stroke-width="1.5"/>
+                        <path d="M2 10 L30 10 L30 26 L2 26 Z" fill="#ffc020" stroke="#000" stroke-width="1.5"/>
+                    </svg>`
+                },
+                {
+                    id: 'win-browser',
+                    name: 'WWW Navigator',
+                    type: 'window',
+                    windowId: 'win-browser',
+                    svgMarkup: `<svg class="w-9 h-9 drop-shadow" viewBox="0 0 32 32">
+                        <circle cx="16" cy="16" r="13" fill="#1084d0" stroke="#000" stroke-width="1.5"/>
+                        <ellipse cx="16" cy="16" rx="13" ry="5" fill="none" stroke="#fff" stroke-width="1.5"/>
+                        <ellipse cx="16" cy="16" rx="5" ry="13" fill="none" stroke="#fff" stroke-width="1.5"/>
+                    </svg>`
+                },
+                {
+                    id: 'win-notes',
+                    name: 'Notas.txt',
+                    type: 'window',
+                    windowId: 'win-notes',
+                    svgMarkup: `<svg class="w-9 h-9 drop-shadow" viewBox="0 0 32 32">
+                        <rect x="4" y="2" width="22" height="28" fill="#ffffff" stroke="#000" stroke-width="2"/>
+                        <rect x="8" y="6" width="14" height="2" fill="#000080"/>
+                        <rect x="8" y="11" width="14" height="2" fill="#808080"/>
+                        <rect x="8" y="15" width="14" height="2" fill="#808080"/>
+                        <rect x="8" y="19" width="10" height="2" fill="#808080"/>
+                        <path d="M22 22 L28 28 L22 28 Z" fill="#c0c0c0"/>
+                    </svg>`
+                },
+                {
+                    id: 'win-oracle',
+                    name: '0r4cul0.exe',
+                    type: 'window',
+                    windowId: 'win-oracle',
+                    svgMarkup: `<svg class="w-9 h-9 drop-shadow" viewBox="0 0 32 32">
+                        <rect x="2" y="4" width="28" height="22" rx="2" fill="#222" stroke="#000" stroke-width="2"/>
+                        <rect x="5" y="7" width="22" height="16" fill="#002200"/>
+                        <circle cx="16" cy="15" r="4" fill="#00ff00"/>
+                        <path d="M10 26 L22 26 L24 30 L8 30 Z" fill="#808080" stroke="#000" stroke-width="1.5"/>
+                    </svg>`
+                },
+                {
+                    id: 'shortcut-doom',
+                    name: 'LUN45TR4.exe',
+                    type: 'error',
+                    emoji: '🕹️',
+                    badge: '⚠️',
+                    errorTitle: 'System Error 0x80040154',
+                    errorMessage: 'O arquivo \'LUN45TR4.exe\' falhou ao inicializar.\n\nMotivo: Biblioteca DR0VVN3D.DLL não encontrada no registro do ARC OS.'
+                },
+                {
+                    id: 'shortcut-security',
+                    name: 'Security.sys',
+                    type: 'error',
+                    emoji: '🔒',
+                    badge: '⚠️',
+                    errorTitle: 'Erro de Acesso Recusado',
+                    errorMessage: 'C:\\System32\\kernel_patch.sys\n\nAcesso Negado! Nível de autorização insuficiente.'
+                },
+                {
+                    id: 'shortcut-photo1',
+                    name: 'foto_porto.bmp',
+                    type: 'error',
+                    emoji: '🖼️',
+                    badge: '❌',
+                    errorTitle: 'Erro de Leitura de Disco',
+                    errorMessage: 'Não foi possível ler o arquivo \'foto_porto.bmp\'. O arquivo está corrompido ou ilegível.'
+                }
+            ],
+            documents: {
+                'vazio.bmp': {
+                    title: 'vazio.bmp',
+                    size: '4 KB',
+                    icon: '🖼️',
+                    openable: false,
+                    errorTitle: 'Erro de Leitura de Disco',
+                    errorMessage: 'Não foi possível ler o arquivo \'vazio.bmp\'. Eles ainda estão de baixo da agua.'
+                },
+                'TODO.txt': {
+                    title: 'TODO.txt',
+                    size: '2 KB',
+                    icon: '📄',
+                    openable: true,
+                    content: "TODO:\n\n[x] Analisar documentos em registros públicos;\n[x] Preparar equipamento de mergulho;\n[x] Marcar consulta com oftalmo sobre os borrões na visão;\n[-] Eu estou sozinho?;\n[-] Não acho que estou vendo coisas;\n[-] Eu vi aquilo acenando para mim;\n[x] Trancar as portas;\n[x] Trancar as portas;\n[x] Trancar as portas;\n[ ] Trancar as portas;"
+                },
+                'Perguntas.txt': {
+                    title: 'Perguntas.txt',
+                    size: '2 KB',
+                    icon: '📄',
+                    openable: true,
+                    content: "Vou deixar aqui anotado algumas perguntas que já fiz para poder pergutnar novamente mais facil: \n\nQuem é você?\nQuem é o Guardião\nOque aconteceu com a cidade\nOnde está a cidade"
+                },
+                '3U.txt': {
+                    title: '3U.txt',
+                    size: '2 KB',
+                    icon: '📄',
+                    openable: true,
+                    content: `3u n40 50u m415 3u m35m0.\nD3ntr3 3st4 v1d4 3 0qu3 v3m d3p015 m3 p3rd1.\nUm pr1510n31r0 50b 45 0nd45.\n53m 0lh05, 0uv1d05 0u um4 b0c4.\nH4 0utr05 c0m0 3u.\nD3 0utr05 lug4r35, 0utr45 3r45.\nQu3m 50m05 n05?\nN05 ch4m4m05: 0r4cul0
+                            ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⣤⣤⣤⣤⣴⣤⣤⣄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+                            ⠀⠀⠀⠀⠀⠀⠀⣀⣴⣾⠿⠛⠋⠉⠁⠀⠀⠀⠈⠙⠻⢷⣦⡀⠀⠀⠀⠀⠀⠀
+                            ⠀⠀⠀⠀⠀⣤⣾⡿⠋⠁⠀⣠⣶⣿⡿⢿⣷⣦⡀⠀⠀⠀⠙⠿⣦⣀⠀⠀⠀⠀
+                            ⠀⠀⢀⣴⣿⡿⠋⠀⠀⢀⣼⣿⣿⣿⣶⣿⣾⣽⣿⡆⠀⠀⠀⠀⢻⣿⣷⣶⣄⠀
+                            ⠀⣴⣿⣿⠋⠀⠀⠀⠀⠸⣿⣿⣿⣿⣯⣿⣿⣿⣿⣿⠀⠀⠀⠐⡄⡌⢻⣿⣿⡷
+                            ⢸⣿⣿⠃⢂⡋⠄⠀⠀⠀⢿⣿⣿⣿⣿⣿⣯⣿⣿⠏⠀⠀⠀⠀⢦⣷⣿⠿⠛⠁
+                            ⠀⠙⠿⢾⣤⡈⠙⠂⢤⢀⠀⠙⠿⢿⣿⣿⡿⠟⠁⠀⣀⣀⣤⣶⠟⠋⠁⠀⠀⠀
+                            ⠀⠀⠀⠀⠈⠙⠿⣾⣠⣆⣅⣀⣠⣄⣤⣴⣶⣾⣽⢿⠿⠟⠋⠀⠀⠀⠀⠀⠀⠀
+                            ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠙⠛⠛⠙⠋⠉⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀`
+                },
+                'declaracao_ir.cfg': {
+                    title: 'ir_2004.cfg',
+                    size: '12 KB',
+                    icon: '⚙️',
+                    openable: false,
+                    errorTitle: 'Erro de Acesso Restrito',
+                    errorMessage: 'C:\\Users\\ANOM\\Documentos\\ir_2004.cfg\n\nPermissões insuficientes.'
+                }
+            },
+            trash: {
+                'guardião.ini': {
+                    title: 'guardião.ini',
+                    size: '4 KB',
+                    icon: '🖼️',
+                    openable: false,
+                    errorTitle: 'Erro de Leitura de Disco',
+                    errorMessage: 'O arquivo \'guardião.ini\' não pode ser restaurado.\n\nMotivo: ELE ABANDONOU SEU POSTO.'
+                },
+                'corrupt_log.txt': {
+                    title: 'corrupt_log.txt',
+                    size: '1 KB',
+                    icon: '📄',
+                    content: "LOG DE AUDITORIA [CORROMPIDO]\n-------------------------------------\nEsta manhã pescadores encontraram um cristal estranho enquanto pescavam. Decidiram levar ao templo para ser visto.\n\n[ERRO CRÍTICO] Registro Corrompido."
+                },
+            },
+            browserPages: {
+                'arc://home': `
+                    <div class="p-2">
+                        <h1 class="text-base font-bold text-blue-900 border-b pb-1 mb-2">ArcNet Portal de Início</h1>
+                        <p class="mb-2">Bem-vindo à rede interna do Arc OS. Use os links abaixo para navegar:</p>
+                        <ul class="list-disc pl-4 space-y-1 text-blue-700 underline cursor-pointer">
+                            <li onclick="navigateBrowser('arc://research')">🔎 Fontes da pesquisa realizada</li>
+                            <li onclick="navigateBrowser('arc://forum')">💬 Fórum de Usuários Antigos</li>
+                            <li onclick="navigateBrowser('arc://archive')">📜 ███████████████</li>
+                        </ul>
+                    </div>
+                `,
+                'arc://research': `
+                    <div class="p-2">
+                        <h1 class="text-base font-bold text-red-900 border-b pb-1 mb-2">ERRO: Conteúdo Perdido (Sector 404)</h1>
+                        <p class="text-gray-700 mb-2">Os dados desta página foram corrompidos após uma falha de sincronização.</p>
+                        <div class="p-2 bg-red-50 border border-red-300 rounded font-mono text-[11px] text-red-800">
+                            [DADO NULO DETECTADO]<br/>
+                            Fragmentos recuperados: 0%<br/>
+                            Último acesso: Desconhecido
+                        </div>
+
+                        <button onclick="navigateBrowser('arc://home')" class="btn-retro px-3 py-1 font-bold text-black text-xs">Voltar ao Início</button>
+                    </div>
+                `,
+                'arc://forum': `
+                    <div class="p-2 space-y-3">
+                        <p class="text-gray-700 mb-2">Os dados desta página foram corrompidos após uma falha de sincronização.</p>
+                        <div class="p-2 bg-red-50 border border-red-300 rounded font-mono text-[11px] text-red-800">
+                            [DADO NULO DETECTADO]<br/>
+                            Fragmentos recuperados: 0%<br/>
+                            Último acesso: Desconhecido
+                        </div>
+
+                        <button onclick="navigateBrowser('arc://home')" class="btn-retro px-3 py-1 font-bold text-black text-xs">Voltar ao Início</button>
+                    </div>
+                `,
+                'arc://archive': `
+                    <div class="p-4 bg-black text-green-400 font-mono-retro h-full overflow-y-auto">                    
+                        <pre class="text-[10px] leading-tight text-cyan-300 select-text mb-4 whitespace-pre">
+
+⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⠀⠀⠀⠈⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠄⢰⠇⠀⠀⠠⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠠⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⢸⠀⠀⠂⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠠⠀⠀⠀⠁⠀⠀⠀⠀⡇⢸⢸⡇⠇⢀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠀⠀⠇⢀⡇⢸⣸⠀⠀⠀⠀⠀⠀⠀⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠂⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⢀⠀⠃⢸⢠⢸⣿⢸⠀⠀⠀⠠⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠁⠀⠀⠐⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡀⠰⠀⠀⠀⠀⠀⠀⠀⠀⠄⠀⠀⠀⠀⢸⢸⢠⠀⣾⢸⢸⣿⢸⢀⢠⠀⡆⡇⠀⠀⠐⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠁⠀⠀⠀⠀⢃⠀⢀⠀⠀⠀⢀⠀⠀⠀⠀⠀⠁⠘⢸⢸⠀⡏⣿⢸⣿⢸⡘⢸⡀⡇⡇⡀⠀⠀⠀⠄⠀⠀⠀⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⠀⢄⠀⠀⢀⠀⠀⢢⡀⠀⠀⠀⢰⠀⣸⢸⢴⣇⡟⣾⣿⢸⣿⢸⡇⡇⡇⡇⠰⠀⠀⠀⠈⠀⠀⠀⠀⠀⠀⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠀⠐⢄⠘⢄⠀⠣⡀⠀⠑⢄⠀⠱⣄⠁⡄⠆⣇⢿⢸⣾⣿⣇⣿⣿⣼⣿⣸⢷⡇⣼⢀⠀⠀⣠⠊⠀⣠⠆⠀⠀⠀⠁⠡⠎⠀⠈⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠢⠀⠀⠀⡑⢄⠀⠁⠀⠑⢄⠙⢦⡀⠢⠙⡦⣈⢧⡻⣜⠼⣜⢯⣿⣿⣿⣿⣿⣿⣿⣿⣼⣹⢣⢣⢡⠞⣁⣴⠞⡁⠀⠀⠀⡠⠀⠀⠤⠀⠀⠀⠀⠀⡠⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠑⠠⡈⠒⠥⣀⠀⠐⠄⡉⠢⣝⡲⢬⡪⣎⢧⠽⠟⡺⠿⠛⠋⠉⠉⠉⠉⠉⠙⠛⠛⠿⣟⡻⢷⣾⣫⠥⡺⠕⣀⠤⡊⠀⢠⠀⢀⡠⠂⢀⡠⠊⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⢀⠀⠀⠀⠀⠀⠒⠤⣀⠑⠢⠬⣽⣒⠤⠈⠒⡦⢭⣟⠚⣩⠰⠊⠁⠀⠀⠀⢀⡀⡀⠀⠀⠀⠀⠀⠀⢀⠀⠉⠓⢮⣝⡳⢻⣭⠖⣋⠠⣀⡴⠞⡩⠄⠚⠁⠀⠀⠄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠈⠀⠀⢀⡀⠈⠀⠀⠀⠈⠁⠒⠀⠬⠍⠛⠛⣚⣩⡆⠋⠁⣀⣴⣶⠏⣠⡞⣡⣶⣶⣶⡄⠀⠀⠀⠀⠀⠻⣷⣦⣀⠈⠛⢶⣬⣓⣒⢛⣃⣉⠠⠔⠀⠠⠂⠁⠀⠀⠀⠠⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠂⠠⠀⠀⠀⠈⠁⠐⠢⠤⣁⣒⣒⣛⣂⣶⡟⠟⠉⢀⣤⣾⣿⣿⡏⢠⢶⡃⢿⣿⣿⠿⠁⠀⠀⠀⠀⠀⠀⢹⣿⣿⣷⣤⠀⠈⠻⢯⣟⣂⣂⣒⣒⣒⣈⡩⠥⠐⠈⠁⠀⠀⠠⠀⠈⠉⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⢀⠀⠀⠀⠀⠈⠉⠉⠉⠀⠐⠒⣒⣛⣿⣿⣛⠉⠀⠀⠠⣾⣿⣿⣿⣿⡅⢊⠎⣹⠀⠉⠁⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⣿⣿⣿⣷⠀⠀⠀⠉⣛⠒⢲⠆⠡⠤⠤⠤⠒⠒⠀⠈⠀⠀⠀⠀⠀⢀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⢀⡀⠀⠀⠈⠀⡀⠠⠤⠐⠒⠒⣒⠒⠚⠳⠼⠛⠿⣶⣥⡠⡀⠙⢿⣿⣿⣿⣇⠀⠘⠄⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣮⣿⣿⣿⠟⠃⠀⢀⣴⣶⠿⠛⢿⣽⣛⠋⣉⣉⠉⠒⠒⠒⠂⠐⠀⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠠⠀⠀⠒⠀⠩⠉⠀⠉⠉⢑⡚⢛⢋⠸⠝⠿⣮⣔⠄⡈⠛⠿⣿⣄⠈⠀⠁⠂⠄⠀⠀⠀⠀⠀⠀⢀⣼⣿⠿⠛⢁⢀⣠⣾⡻⠯⠭⣉⡙⠓⠚⠥⢄⡀⠀⠀⠈⠉⠐⠒⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⢀⠀⠀⠤⠄⠀⠤⠐⠀⠈⢉⡠⠄⣀⠤⠒⣈⡭⠾⢙⡿⣾⣤⣂⠀⣉⠑⠀⠀⠀⠀⠀⠀⠀⠀⠀⠐⠊⣉⠠⣀⣬⡶⢿⣟⠯⢍⡛⠶⡤⠉⠑⠢⢄⠀⠀⠉⠀⠂⠠⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠀⠒⡡⠔⠈⠀⠢⠋⠁⠂⠀⣡⠴⢃⣵⢟⡟⣷⣾⣿⣶⣶⣤⣤⣤⣴⣶⣦⣬⡷⣶⢿⢯⡳⣌⠢⢍⠛⠦⠌⠑⠠⠀⠀⠲⠤⡉⠢⠀⠈⠀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠠⠀⠀⠀⠀⠀⠀⠊⠀⠀⠀⠀⠄⠀⠀⠁⠘⢁⢀⠔⠁⠁⣽⢣⣇⡏⡏⣿⡟⣿⣿⢿⣿⣿⢸⡵⢹⣯⠆⠑⢜⢣⡀⠉⠢⣈⠂⠀⠀⠀⠀⠀⠀⠂⡀⠀⠀⠀⠑⢄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠂⠀⠀⠀⠀⠀⠀⠀⠔⠀⠀⡠⠈⠀⠀⠀⣰⠑⢸⣹⢹⢿⣿⡇⣿⣿⢸⡟⢸⠈⣷⠁⠙⢇⠀⠀⠀⠙⢦⡀⠈⠃⢄⠀⠀⠀⠐⠀⠀⠀⠀⠀⠄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠐⠀⡀⠁⠀⠀⠀⠀⠀⠀⠀⠁⠃⠇⢸⢸⢸⠸⡏⡇⢸⣿⢸⣧⢨⠀⡝⡏⠀⠈⠂⠀⠀⠀⢀⠀⠀⠀⡀⠑⡀⠀⠀⠀⠈⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠒⠀⠀⠀⠀⠀⠀⡸⢸⢸⠀⣧⢿⢸⣿⠀⣿⠈⠀⠇⡇⠀⠀⠀⠐⠀⠀⠀⠀⠀⠀⠀⠀⠈⠄⠀⠀⠀⠄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠀⢀⠀⢁⠘⠀⡀⠸⡌⢸⣿⠀⡏⠀⢀⠀⡄⠀⣤⠀⠀⠀⠐⠀⠀⠀⠀⠀⢠⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠐⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠀⡀⠇⠸⠃⢸⣿⠀⠇⠀⠀⢰⠀⠀⠀⠀⠀⠀⠀⠈⠀⠂⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡀⠀⢀⠀⠀⠀⠁⠀⠂⠸⡟⠀⠀⠀⠀⠂⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠠⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠁⠀⠀⠀⠀⠀⠂⠀⠀⠀⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⠤⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⠀⠀⠀⠀⠀⠈⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢰⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+
+                        </pre>
+                        <p class="text-xs text-gray-950 mb-4">Como o Guardião foi corrompido?</p>
+                        <p class="text-xs text-gray-400 mb-4">Não temos como responde-lo aqui...</p>
+                    </div>
+                `
+            }
+        };
+
+        const oraculoConhecimento = [
+            {
+                keywords: ['ONDE', 'FICA', 'ESTÁ', 'CIDADE', 'PORTO', 'LUNASTRA'],
+                minMatch: 3,
+                resposta: "ORACULO: Ainda não está na hora para esta resposta."
+            },
+            {
+                keywords: ['OBJETO', 'OQUE', 'É', 'O QUE'],
+                minMatch: 3,
+                resposta: "ORACULO: O objeto, quebrado, mas o reflexo de suas sombras continua até hoje."
+            },
+            {
+                keywords: ['QUANDO', 'CIDADE', 'AFUNDADA'],
+                minMatch: 3,
+                resposta: "ORACULO: Há mais tempo doque consigo me lembrar."
+            },
+                        {
+                keywords: ['QUEM', 'É', 'VOCÊ'],
+                minMatch: 3,
+                resposta: "ORACULO: Nós somos aqueles que vagam sem rumo, que se reunem, de eras e locais diferentes. Você já nos viu antes..."
+            },
+            {
+                keywords: ['PORTO', 'LUNASTRA', 'CIDADE', 'ACONTECEU'],
+                minMatch: 2,
+                resposta: "ORACULO: A cidade foi afundada sob as ondas, destruida e escondida pelo seu guardião."
+            },
+            {
+                keywords: ['QUEM', 'GUARDIÃO', 'PROTETOR'],
+                minMatch: 2, 
+                resposta: "ORACULO: O Guardião, protetor da cidade que vive no fundo dos oceanos. Ele aparecia durante tempestades para guiar navios de volta ao porto."
+            },
+            {
+                keywords: ['GUARDIÃO', 'PROTETOR', 'CORROMPIDO', 'CORRUPÇÃO'],
+                minMatch: 2,
+                resposta: "ORACULO: O objeto deixou todos confusos, agressivos, gananciosos e desesperados, não foi diferente com o Guardião."
+            },
+            {
+                keywords: ['PERGUNTAR', 'PERGUNTA'],
+                minMatch: 1,
+                resposta: "ORACULO: Procure por este local, o pesquisador deve ter anotado perguntas que ele fez."
+            }
+        ];
+        function renderDesktopIcons() {
+            const desktop = document.getElementById('desktop');
+            const watermark = desktop.firstElementChild;
+            desktop.innerHTML = '';
+            desktop.appendChild(watermark);
+
+            arcOSConfig.desktopIcons.forEach(icon => {
+                const div = document.createElement('div');
+                div.className = "desktop-icon group w-20 flex flex-col items-center justify-center p-2 cursor-pointer rounded hover:bg-blue-900/30 text-white text-center z-10";
+                div.onclick = function() { selectIcon(this); };
+
+                if (icon.type === 'window') {
+                    div.ondblclick = () => openWindow(icon.windowId);
+                    div.innerHTML = `
+                        <div class="w-10 h-10 mb-1 flex items-center justify-center">${icon.svgMarkup}</div>
+                        <span class="text-xs font-sans tracking-wide leading-tight bg-transparent group-focus:bg-blue-800 px-1">${icon.name}</span>
+                    `;
+                } else if (icon.type === 'error') {
+                    div.ondblclick = () => showErrorModal(icon.errorTitle, icon.errorMessage);
+                    div.innerHTML = `
+                        <div class="w-10 h-10 mb-1 flex items-center justify-center relative">
+                            <span class="text-2xl">${icon.emoji}</span>
+                            <span class="absolute -bottom-1 -right-1 text-xs text-red-500 font-bold">${icon.badge}</span>
+                        </div>
+                        <span class="text-xs font-sans tracking-wide leading-tight group-focus:bg-blue-800 px-1">${icon.name}</span>
+                    `;
+                }
+                desktop.appendChild(div);
+            });
+        }
+
+        function renderDocuments() {
+            const container = document.getElementById('docs-container');
+            container.innerHTML = '';
+            let count = 0;
+
+            for (const [key, file] of Object.entries(arcOSConfig.documents)) {
+                count++;
+                const item = document.createElement('div');
+                item.onclick = () => readDocFile(key);
+                item.className = "p-2 border border-transparent hover:border-blue-500 hover:bg-blue-50 flex items-center gap-2 cursor-pointer rounded";
+                item.innerHTML = `
+                    <span class="text-lg">${file.icon}</span>
+                    <div class="overflow-hidden">
+                        <div class="text-xs font-semibold truncate">${file.title}</div>
+                        <div class="text-[10px] text-gray-500">${file.size}</div>
+                    </div>
+                `;
+                container.appendChild(item);
+            }
+            document.getElementById('docs-status').innerText = `${count} arquivo(s) encontrado(s)`;
+        }
+
+        function renderTrashFiles() {
+            const container = document.getElementById('trash-container');
+            container.innerHTML = '';
+            let count = 0;
+
+            for (const [key, file] of Object.entries(arcOSConfig.trash)) {
+                count++;
+                const item = document.createElement('div');
+                item.onclick = () => readTrashFile(key);
+                item.className = "p-2 border border-transparent hover:border-blue-500 hover:bg-blue-50 flex items-center gap-2 cursor-pointer rounded";
+                item.innerHTML = `
+                    <span class="text-lg">${file.icon}</span>
+                    <div class="overflow-hidden">
+                        <div class="text-xs font-semibold truncate">${file.title}</div>
+                        <div class="text-[10px] text-gray-500">${file.size}</div>
+                    </div>
+                `;
+                container.appendChild(item);
+            }
+            document.getElementById('trash-status').innerText = `${count} objeto(s) selecionáveis`;
+        }
+
+        function showEthernetStatus() {
+            playKeyBeep();
+            showErrorModal('Status da Conexão Ethernet', 'Conectado à ArcNet Local (Interface Ativa).\nVelocidade: 56 KB/s.\nEndereço IP: [ DESCONHECIDO / DHCP PENDING ]');
+        }
+
+        let audioEnabled = true;
+        let synth, polySynth;
+
+        function initAudio() {
+            if (!synth) {
+                synth = new Tone.Synth().toDestination();
+                polySynth = new Tone.PolySynth().toDestination();
+                Tone.Master.volume.value = -12;
+            }
+        }
+
+        function playKeyBeep() {
+            if (!audioEnabled) return;
+            try { initAudio(); synth.triggerAttackRelease("C5", "64n"); } catch(e) {}
+        }
+
+        function playErrorSound() {
+            if (!audioEnabled) return;
+            try { initAudio(); synth.triggerAttackRelease("C3", "16n"); } catch(e) {}
+        }
+
+        function playBootSound() {
+            if (!audioEnabled) return;
+            try {
+                initAudio();
+                const now = Tone.now();
+                polySynth.triggerAttackRelease(["C4", "E4", "G4", "B4"], "8n", now);
+                polySynth.triggerAttackRelease(["G4", "B4", "D5", "F#5"], "4n", now + 0.2);
+            } catch(e) {}
+        }
+
+        function playSuccessSound() {
+            if (!audioEnabled) return;
+            try {
+                initAudio();
+                const now = Tone.now();
+                polySynth.triggerAttackRelease(["C4", "G4", "C5", "E5"], "2n", now);
+            } catch(e) {}
+        }
+
+        function toggleAudio() {
+            audioEnabled = !audioEnabled;
+            const btn = document.getElementById('audio-btn');
+            const icon = document.getElementById('sound-status-icon');
+            if (audioEnabled) {
+                if (btn) btn.innerText = "🔊 Sound: ON";
+                if (icon) icon.innerText = "🔊";
+                playKeyBeep();
+            } else {
+                if (btn) btn.innerText = "🔇 Sound: OFF";
+                if (icon) icon.innerText = "🔇";
+            }
+        }
+
+        function showErrorModal(title, message) {
+            playErrorSound();
+            document.getElementById('error-title').innerText = title;
+            document.getElementById('error-message').innerText = message;
+            document.getElementById('error-modal').classList.remove('hidden');
+        }
+
+        function closeErrorModal() {
+            playKeyBeep();
+            document.getElementById('error-modal').classList.add('hidden');
+        }
+
+        function attemptLogin() {
+            const pass = document.getElementById('login-pass').value.trim();
+            const err = document.getElementById('login-error');
+            if (pass === '3cl1p53') {
+                document.getElementById('login-screen').classList.add('hidden');
+                playBootSound();
+                err.classList.add('hidden');
+            } else {
+                err.classList.remove('hidden');
+            }
+        }
+
+        function logOff() {
+            playKeyBeep();
+            document.querySelectorAll('.window').forEach(w => w.classList.add('hidden'));
+            document.getElementById('login-pass').value = '';
+            document.getElementById('login-screen').classList.remove('hidden');
+            updateTaskbar();
+        }
+
+        // --- CLOCK FUNCTION ---
+        function updateClock() {
+            const now = new Date();
+            let hours = now.getHours();
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12 || 12;
+            document.getElementById('system-clock').innerText = `${hours}:${minutes} ${ampm}`;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // --- DRAGGABLE WINDOW SYSTEM ---
+        let activeZIndex = 10;
+
+        function makeDraggable(winEl) {
+            const header = winEl.querySelector('.window-header');
+            let isDragging = false;
+            let offsetX = 0, offsetY = 0;
+
+            winEl.addEventListener('mousedown', () => bringToFront(winEl));
+
+            if (header) {
+                header.addEventListener('mousedown', (e) => {
+                    isDragging = true;
+                    offsetX = e.clientX - winEl.offsetLeft;
+                    offsetY = e.clientY - winEl.offsetTop;
+                    bringToFront(winEl);
+                });
+            }
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                winEl.style.left = `${Math.max(0, e.clientX - offsetX)}px`;
+                winEl.style.top = `${Math.max(0, e.clientY - offsetY)}px`;
+            });
+
+            document.addEventListener('mouseup', () => { isDragging = false; });
+        }
+
+        function bringToFront(winEl) {
+            activeZIndex++;
+            winEl.style.zIndex = activeZIndex;
+        }
+
+        document.querySelectorAll('.window').forEach(makeDraggable);
+
+        // --- WINDOW MANAGERS ---
+        function openWindow(id) {
+            playKeyBeep();
+            const win = document.getElementById(id);
+            win.classList.remove('hidden');
+            bringToFront(win);
+            updateTaskbar();
+            if (id === 'win-browser') {
+                navigateBrowser(document.getElementById('browser-url-input').value);
+            }
+        }
+
+        function closeWindow(id) {
+            playKeyBeep();
+            document.getElementById(id).classList.add('hidden');
+            updateTaskbar();
+        }
+
+        function minimizeWindow(id) {
+            playKeyBeep();
+            document.getElementById(id).classList.add('hidden');
+            updateTaskbar();
+        }
+
+        function updateTaskbar() {
+            const container = document.getElementById('taskbar-tabs');
+            container.innerHTML = '';
+
+            const windows = [
+                { id: 'win-docs', name: 'Documentos', icon: '📁' },
+                { id: 'win-browser', name: 'Navigator', icon: '🌐' },
+                { id: 'win-notes', name: 'Notas.txt', icon: '📄' },
+                { id: 'win-trash', name: 'Lixeira', icon: '🗑️' },
+                { id: 'win-oracle', name: 'Oraculo.exe', icon: '👁️' }
+            ];
+
+            windows.forEach(w => {
+                const el = document.getElementById(w.id);
+                if (el && !el.classList.contains('hidden')) {
+                    const tabBtn = document.createElement('button');
+                    tabBtn.className = "btn-retro px-2 py-0.5 text-xs flex items-center gap-1 active font-semibold truncate max-w-[120px]";
+                    tabBtn.innerHTML = `<span>${w.icon}</span> <span>${w.name}</span>`;
+                    tabBtn.onclick = () => bringToFront(el);
+                    container.appendChild(tabBtn);
+                }
+            });
+        }
+
+        function toggleStartMenu() {
+            playKeyBeep();
+            document.getElementById('start-menu').classList.toggle('hidden');
+        }
+
+        function selectIcon(el) {
+            document.querySelectorAll('.desktop-icon').forEach(icon => icon.classList.remove('bg-blue-900/40'));
+            el.classList.add('bg-blue-900/40');
+        }
+
+        document.addEventListener('click', (e) => {
+            const menu = document.getElementById('start-menu');
+            const startBtn = document.getElementById('start-btn');
+            if (menu && startBtn && !menu.contains(e.target) && !startBtn.contains(e.target)) {
+                menu.classList.add('hidden');
+            }
+        });
+
+        // --- WEB BROWSER NAVIGATION ---
+        function navigateBrowser(url) {
+            playKeyBeep();
+            const viewport = document.getElementById('browser-viewport');
+            const input = document.getElementById('browser-url-input');
+            input.value = url;
+
+            const pages = arcOSConfig.browserPages;
+            if (pages[url]) {
+                viewport.innerHTML = pages[url];
+            } else {
+                viewport.innerHTML = `
+                    <div class="p-4 text-center">
+                        <h2 class="text-red-600 font-bold text-sm mb-1">404 - Página Não Encontrada</h2>
+                        <p class="text-gray-600">A URL '${url}' não existe na rede ArcNet.</p>
+                        <button onclick="navigateBrowser('arc://home')" class="btn-retro px-3 py-1 mt-3 font-bold">Voltar ao Início</button>
+                    </div>
+                `;
+            }
+        }
+
+        // --- FILE READERS WITH UNOPENABLE RESTRICTIONS ---
+        function readDocFile(fileName) {
+            playKeyBeep();
+            const file = arcOSConfig.documents[fileName];
+            if (file) {
+                if (file.openable === false) {
+                    showErrorModal(file.errorTitle, file.errorMessage);
+                } else {
+                    document.getElementById('modal-title').innerText = file.title;
+                    document.getElementById('modal-content').innerText = file.content;
+                    document.getElementById('file-viewer-modal').classList.remove('hidden');
+                }
+            }
+        }
+
+        function readTrashFile(fileName) {
+            playKeyBeep();
+            const file = arcOSConfig.trash[fileName];
+            if (file.openable === false) {
+                    showErrorModal(file.errorTitle, file.errorMessage);
+            } else {
+                document.getElementById('modal-title').innerText = file.title;
+                document.getElementById('modal-content').innerText = file.content;
+                document.getElementById('file-viewer-modal').classList.remove('hidden');
+            }
+        }
+
+        function closeModal() {
+            playKeyBeep();
+            document.getElementById('file-viewer-modal').classList.add('hidden');
+        }
+
+        // --- ORACULO PUZZLE TERMINAL STATE MACHINE ---
+        let puzzleStage = 0;
+
+        function appendLog(text, colorClass = "text-green-400") {
+            const log = document.getElementById('terminal-log');
+            const p = document.createElement('p');
+            p.className = `${colorClass} leading-tight`;
+            p.innerText = text;
+            log.appendChild(p);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function handleTerminalCommand(e) {
+            if (e.key === 'Enter') {
+                const inputEl = document.getElementById('terminal-input');
+                const rawCmd = inputEl.value.trim();
+                const cmd = rawCmd.toUpperCase();
+
+                if (!rawCmd) return;
+
+                playKeyBeep();
+                appendLog(`> ${rawCmd}`, "text-white font-bold");
+                inputEl.value = '';
+
+                processOracleLogic(cmd);
+            }
+        }
+
+        function processOracleLogic(cmd) {
+            setTimeout(() => {
+                if (cmd === 'LIMPAR' || cmd === 'CLEAR') {
+                    document.getElementById('terminal-log').innerHTML = '';
+                    return;
+                }
+
+                    if (cmd === 'INICIAR' || cmd === 'START') {
+                        appendLog("ORACULO: Saudações", "text-amber-300");
+                        appendLog("ORACULO: Faça sua pergunta...", "text-amber-300");
+                        appendLog("ORACULO: Talvez tenhamos uma resposta...", "text-gray-950");
+                       return;
+                }
+
+                // Busca se a pergunta do usuário combina com alguma das regras
+                let respostaEncontrada = null;
+
+                for (const item of oraculoConhecimento) {
+                    const palavrasEncontradas = item.keywords.filter(kw => cmd.includes(kw)).length;
+                    const limiteMinimo = item.minMatch !== undefined ? item.minMatch : 1;
+                    
+                    if (palavrasEncontradas >= limiteMinimo) {
+                        respostaEncontrada = item.resposta;
+                        break;
+                    }
+                }
+
+                if (respostaEncontrada) {
+                    playSuccessSound();
+                    appendLog(respostaEncontrada, "text-green-300 font-bold");
+                } else {
+                    playErrorSound();
+                    appendLog("ORACULO: Não tenho como responder esta pergunta.", "text-red-400");
+                    appendLog("Não há entendi ou não posso responde-la ainda.", "text-gray-400 text-xs");
+                }
+            }, 300);
+        }
+
+        function triggerShutdown() {
+            playKeyBeep();
+            if (confirm("Deseja mesmo desligar o Arc OS?")) {
+                document.body.innerHTML = `
+                    <div class="h-screen w-screen bg-black text-orange-500 font-mono flex flex-col items-center justify-center p-6 text-center select-none">
+                        <p class="text-xl mb-4">Seu computador já pode ser desligado com segurança.</p>
+                        <p class="text-sm text-gray-600">Arc OS 95 - Sessão Encerrada.</p>
+                        <button onclick="location.reload()" class="mt-8 px-4 py-2 border border-orange-500 text-orange-500 hover:bg-orange-950">Reiniciar Sistema</button>
+                    </div>
+                `;
+            }
+        }
+
+        // --- INITIALIZE ENVIRONMENT ON LOAD ---
+        window.addEventListener('DOMContentLoaded', () => {
+            renderDesktopIcons();
+            renderDocuments();
+            renderTrashFiles();
+        });
+    </script>
+</body>
+</html>
