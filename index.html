@@ -283,6 +283,38 @@
         <div class="window-header bg-gradient-to-r from-[#000080] to-[#1084d0] p-1 flex items-center justify-between text-white font-bold cursor-move">
             <div class="flex items-center gap-2 px-1">
                 <span class="text-xs">📄</span>
+                <span class="text-xs tracking-wide">Bloco de Notas - Proximos_Passos.txt</span>
+            </div>
+            <div class="flex gap-1">
+                <button onclick="minimizeWindow('win-notes')" class="btn-retro w-4 h-4 text-black text-[10px] leading-none flex items-center justify-center font-bold">_</button>
+                <button onclick="closeWindow('win-notes')" class="btn-retro w-4 h-4 text-black text-[10px] leading-none flex items-center justify-center font-bold">✕</button>
+            </div>
+        </div>
+        <div class="flex gap-3 text-xs px-2 py-0.5 border-b border-gray-400 bg-[#c0c0c0]">
+            <span class="underline cursor-pointer">Arquivo</span>
+            <span class="underline cursor-pointer">Editar</span>
+            <span class="underline cursor-pointer">Exibir</span>
+            <span class="underline cursor-pointer">Ajuda</span>
+        </div>
+        <div class="flex-1 p-2 bg-white inset-border m-1 overflow-auto font-mono text-xs text-gray-800 leading-relaxed select-text">
+            Levem nos para o topo da "escada sem fim" vocês sabem onde...<br/><br/>
+
+            Busquem por aqueles que se separaram...<br/><br/>
+            
+            Um em meio as paredes amarelas em meio ao lixo, imagino que conheçam;<br/><br/>
+            
+            Um segundo em meio a um laboratório abandonado, acho que isso pode ajuda-los 4114 1302<br/><br/>
+            
+            Por fim, o terceiro, em um local congelado em meio ao mar, uma gruta de alguem que se perdeu a muito tempo quase espelhada do anterior, ao sudoeste com uma diferença de 279 e 684<br/><br/>
+
+            A evolução é necessária pelo que está por vir.
+        </div>
+    </div>
+
+    <div id="win-next" class="window hidden absolute w-96 max-w-[90vw] h-80 bg-[#c0c0c0] outset-border flex flex-col z-10 top-16 left-8 shadow-2xl">
+        <div class="window-header bg-gradient-to-r from-[#000080] to-[#1084d0] p-1 flex items-center justify-between text-white font-bold cursor-move">
+            <div class="flex items-center gap-2 px-1">
+                <span class="text-xs">📄</span>
                 <span class="text-xs tracking-wide">Bloco de Notas - Clues.txt</span>
             </div>
             <div class="flex gap-1">
@@ -297,13 +329,6 @@
             <span class="underline cursor-pointer">Ajuda</span>
         </div>
         <div class="flex-1 p-2 bg-white inset-border m-1 overflow-auto font-mono text-xs text-gray-800 leading-relaxed select-text">
-            [REGISTRO PESSOAL - NÃO APAGAR]<br/><br/>
-            
-            Não sei como ou quando mas durante minhas pesquisas esse 0r4cul0 apareceu em meu desktop.<br/>
-            
-            Depois de um tempo receoso, decidi abri-lo, não sei se entendi bem como ele funciona mas ele parece responder algumas questões.<br/><br/>
-
-            -- Me pergunto se isso de alguma forma tem haver com minha pesquisa ou com os vultos que eu ando vendo.
         </div>
     </div>
 
@@ -524,7 +549,21 @@
                     badge: '❌',
                     errorTitle: 'Erro de Leitura de Disco',
                     errorMessage: 'Não foi possível ler o arquivo \'foto_porto.bmp\'. O arquivo está corrompido ou ilegível.'
-                }
+                },
+                {   
+                    id: 'win-next',
+                    name: 'Proximos_Passos.txt',
+                    type: 'window',
+                    windowId: 'win-notes',
+                    svgMarkup: `<svg class="w-9 h-9 drop-shadow" viewBox="0 0 32 32">
+                        <rect x="4" y="2" width="22" height="28" fill="#ffffff" stroke="#000" stroke-width="2"/>
+                        <rect x="8" y="6" width="14" height="2" fill="#000080"/>
+                        <rect x="8" y="11" width="14" height="2" fill="#808080"/>
+                        <rect x="8" y="15" width="14" height="2" fill="#808080"/>
+                        <rect x="8" y="19" width="10" height="2" fill="#808080"/>
+                        <path d="M22 22 L28 28 L22 28 Z" fill="#c0c0c0"/>
+                    </svg>`
+                },
             ],
             documents: {
                 'vazio.bmp': {
@@ -572,7 +611,7 @@
                     openable: false,
                     errorTitle: 'Erro de Acesso Restrito',
                     errorMessage: 'C:\\Users\\ANOM\\Documentos\\ir_2004.cfg\n\nPermissões insuficientes.'
-                }
+                },
             },
             trash: {
                 'guardião.ini': {
@@ -964,7 +1003,8 @@
                 { id: 'win-browser', name: 'Navigator', icon: '🌐' },
                 { id: 'win-notes', name: 'Notas.txt', icon: '📄' },
                 { id: 'win-trash', name: 'Lixeira', icon: '🗑️' },
-                { id: 'win-oracle', name: 'Oraculo.exe', icon: '👁️' }
+                { id: 'win-oracle', name: 'Oraculo.exe', icon: '👁️' },
+                { id: 'win-next', name: 'Proximos_Passos.txt', icon: '📄' },
             ];
 
             windows.forEach(w => {
